@@ -1,0 +1,169 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+FILE_NAME = "bookings.csv"
+
+# Create CSV if not exists
+if not os.path.exists(FILE_NAME):
+    df = pd.DataFrame(columns=[
+        "bookingID", "customername", "roomtype", "nights", "totalcost"
+    ])
+    df.to_csv(FILE_NAME, index=False)
+
+
+def load_data():
+    return pd.read_csv(FILE_NAME)
+
+
+def save_data(df):
+    df.to_csv(FILE_NAME, index=False)
+
+
+def add_booking():
+    df = load_data()
+
+    booking_id = len(df) + 1
+    name = input("Enter customer name: ")
+    room= input("Enter room type (Single/Double/Deluxe): ")
+    nights= int(input("Enter number of nights: "))
+
+    price_dict = {"SINGLE": 1000, "DOUBLE": 1800, "DELUXE": 2500}
+    cost_per_night = price_dict.get(room, 1500)
+    total_cost = nights * cost_per_night
+
+    new_booking = {
+        "BookingID": booking_id,
+        "CustomerName": name,
+        "RoomType": room,
+        "Nights": nights,
+        "TotalCost": total_cost
+    }
+
+    df = pd.concat([df, pd.DataFrame([new_booking])], ignore_index=True)
+    save_data(df)
+
+    print("Booking added successfully!")
+    print(f"Total Cost: ₹{total_cost}")
+
+
+def view_bookings():
+    df = load_data()
+    if df.empty:
+        print("No bookings available.")
+    else:
+        print("All Bookings:")
+        print(df)
+
+
+def track_booking():
+    df = load_data()
+    booking_id = int(input("Enter BookingID: "))
+
+    result = df[df["BookingID"] == booking_id]
+    if result.empty:
+        print(" Booking not found.")
+    else:
+        print("Booking Details:")
+        print(result)
+
+def cancel_booking():
+    df = load_data()
+    booking_id = int(input("Enter BookingID to cancel: "))
+
+    if booking_id not in df["BookingID"].values:
+        print("Booking not found.")
+        return
+
+    df = df[df["BookingID"] != booking_id]
+    save_data(df)
+
+    print("Booking cancelled successfully!")
+
+
+def booking_chart():
+    df = load_data()
+    if df.empty:
+        print("No data to visualize.")
+        return
+
+    room_counts = df["RoomType"].value_counts()
+
+    plt.figure(figsize=(10, 5))
+
+    # Bar Chart
+    plt.subplot(1, 2, 1)
+    room_counts.plot(
+        kind="bar",
+        color="skyblue",
+        edgecolor="black"
+    )
+    plt.xlabel("RoomType")
+    plt.ylabel("Number of Bookings")
+    plt.title("RoomType Booking Distribution (Bar)")
+
+def booking_chart():
+    df = load_data()
+    if df.empty:
+        print("No data to visualize.")
+        return
+
+    room_counts = df["RoomType"].value_counts()
+
+    plt.figure(figsize=(10, 5))
+
+    # Bar Chart
+    plt.subplot(1, 2, 1)
+    room_counts.plot(
+        kind="bar",
+        edgecolor="black"
+    )
+    plt.xlabel("Room Type")
+    plt.ylabel("Number of Bookings")
+    plt.title("Room Type Booking Distribution (Bar)")
+
+    # Line Chart
+    plt.subplot(1, 2, 2)
+    room_counts.plot(
+        kind="line",
+        marker="o"
+    )
+    plt.xlabel("Room Type")
+    plt.ylabel("Number of Bookings")
+    plt.title("Room Type Booking Trend (Line)")
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+def menu():
+    while True:
+        print("HOTEL BOOKING SYSTEM")
+        print("1. Add Booking")
+        print("2. View All Bookings")
+        print("3. Track Booking")
+        print("4. Cancel Booking")
+        print("5. View Booking Chart")
+        print("6. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            add_booking()
+        elif choice == "2":
+            view_bookings()
+        elif choice == "3":
+            track_booking()
+        elif choice == "4":
+            cancel_booking()
+        elif choice == "5":
+            booking_chart()
+        elif choice == "6":
+            print("Exiting... Thank you!")
+            break
+        else:
+            print("Invalid choice. Try again.")
+
+
+menu()
